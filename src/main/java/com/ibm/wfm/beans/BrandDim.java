@@ -26,7 +26,9 @@ public class BrandDim extends NaryTreeNode {
 	private String rowStatusCd;
 
 	// Define null constructor
-	public BrandDim () {}
+	public BrandDim () {
+		this.level= 0;
+	}
 	
 	// Define base constructor
 	public BrandDim (
@@ -35,7 +37,7 @@ public class BrandDim extends NaryTreeNode {
     , String     brandDesc
 	) {
 		super(brandCd, brandNm);
-		this.setLevel(0);
+		this.level = 0;
 		this.brandCd                        = brandCd;
 		this.brandNm                        = brandNm;
 		this.brandDesc                      = brandDesc;
@@ -49,7 +51,7 @@ public class BrandDim extends NaryTreeNode {
 		, String     brandDesc
 	) {
 		super(brandCd, brandNm);
-		this.setLevel(0);
+		this.level = 0;
 		this.brandId                        = brandId;
 		this.brandCd                        = brandCd;
 		this.brandNm                        = brandNm;
@@ -85,11 +87,19 @@ public class BrandDim extends NaryTreeNode {
         + "," + Helpers.formatCsvField("BRAND_DESC")
 		;
 	}
+	
+	public String getCode() {
+		return brandCd;
+	}
+	public String getDescription() {
+		return brandNm;
+	}
     
 	// Define Getters and Setters
 	public int getBrandId() {
 		return brandId;
 	}
+	
 	public void setBrandId(int brandId) {
 		this.brandId = brandId;
 	}
@@ -97,13 +107,13 @@ public class BrandDim extends NaryTreeNode {
 		return brandCd;
 	}
 	public void setBrandCd(String brandCd) {
-		this.brandCd = brandCd;
+		this.brandCd = brandCd.trim();
 	}
 	public String getBrandNm() {
 		return brandNm;
 	}
 	public void setBrandNm(String brandNm) {
-		this.brandNm = brandNm;
+		this.brandNm = brandNm.trim();
 	}
 	public String getBrandDesc() {
 		return brandDesc;

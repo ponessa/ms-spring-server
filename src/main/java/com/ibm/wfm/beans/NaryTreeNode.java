@@ -9,7 +9,7 @@ public class NaryTreeNode implements NaryTreeNodeInterface<NaryTreeNode> {
 	private String code = null;
 	private String fullKey = null;
 	private String description = null;
-	private int level = -1;
+	protected int level = -1;
 	private ArrayList<NaryTreeNode> children = null;
 	@JsonIgnore
 	private NaryTreeNode parentNode = null;

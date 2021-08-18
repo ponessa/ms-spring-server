@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+<meta name="generator" content="Hugo 0.84.0">
+<title>ETL Services Test</title>
+
+
+
+<!-- Vendor CSS Files -->
+<link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<!-- Favicons -->
+<!-- Favicons -->
+<link href="assets/img/favicon.png" rel="icon">
+<link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+<meta name="theme-color" content="#7952b3">
+
+
+<style>
+body {
+	min-height: 75rem;
+	padding-top: 4.5rem;
+}
+
+th, td, input {
+	font: 11px Verdana;
+}
+
+/* Carousel base class */
+.carousel {
+	margin-bottom: 2rem;
+}
+/* Since positioning the image, we need to help out the caption */
+.carousel-caption {
+	bottom: 3rem;
+	z-index: 10;
+}
+
+/* Declare heights because of positioning of img element */
+.carousel-item {
+	height: 40rem;
+}
+
+.carousel-item>img {
+	position: absolute;
+	top: 0;
+	left: 0;
+	min-width: 100%;
+}
+
+.bd-placeholder-img {
+	font-size: 1.125rem;
+	text-anchor: middle;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+@media ( min-width : 768px) {
+	.bd-placeholder-img-lg {
+		font-size: 3.5rem;
+	}
+}
+</style>
+
+<script>
+	
+	const api2TableNew = async () => {
+		const response = fetch('http://localhost:8080/api/v1/pit/fbsFootball?pit=2021-06-29-00.00.00.0', {
+		    method: 'GET',
+		    headers: {
+		      'Content-Type': 'application/json'
+		    }
+		  });
+		  const returnedJson = await response.json(); //extract JSON from the http response
+		  createTableFromJson(returnedJson);
+		}
+	
+	function api2Table() {
+		console.log("href="+window.location.href);
+		console.log("host="+window.location.host);
+		console.log("hostname="+window.location.hostname);
+		console.log("protocol="+window.location.protocol);
+		console.log("pathname="+window.location.pathname);
+		console.log("search="+window.location.search);
+		console.log("hash="+window.location.hash);
+		var url = window.location.protocol+"//"+window.location.host;
+		var path = "/api/v1/pit/fbsFootball";
+		var pitInput = document.getElementById("pit");
+		var pit = pitInput.value;
+		var parm='';
+		if (pit.trim()=='' || pit.trim().toUpperCase()=='CURRENT TIMESTAMP') parm='?pit=CURRENT TIMESTAMP';
+		else if (pit.trim().toUpperCase()=='ALL') {
+			parm='';
+			path = '/api/v1/scd/fbsFootball'
+		}
+		else parm = '?pit='+pit.trim();
+		
+	    var req = new XMLHttpRequest();
+	    req.onreadystatechange = function() {
+	         if (this.readyState == 4 && this.status == 200) {
+	        	 createTableFromJson(this.response);
+	         }
+	    };
+	    console.log(url+parm);
+	    req.open("GET", url+path+parm, true);
+	    req.setRequestHeader("Content-type", "application/json");
+	    req.responseType = 'json';
+	    req.send(null);
+	}
+
+	function createTableFromJson(myJson) {
+
+		// EXTRACT VALUE FOR HTML HEADER. 
+		var col = [];
+
+		for (var i = 0; i < myJson.length; i++) {
+			for ( var key in myJson[i]) {
+				if (col.indexOf(key) === -1) {
+					col.push(key);
+				}
+			}
+		}
+
+		var colTemp = ['','id','Conf', 'Div', 'Team','Name','Enrollment','Eff TMS','Expir TMS', 'RS'];
+
+		// CREATE DYNAMIC TABLE.
+		var table = document.createElement("table");
+		table.setAttribute("class","table table-hover table-sm table-striped");
+
+		// CREATE HTML TABLE HEADER ROW USING THE EXTRACTED HEADERS ABOVE.
+
+		var tr = table.insertRow(-1); // TABLE ROW.
+
+		for (var i = 0; i < colTemp.length; i++) {
+			var th = document.createElement("th"); // TABLE HEADER.
+			th.innerHTML = colTemp[i];
+			tr.appendChild(th);
+		}
+
+		// ADD JSON DATA TO THE TABLE AS ROWS.
+		for (var i = 0; i < myJson.length; i++) {
+
+			tr = table.insertRow(-1);
+
+			var x = document.createElement("img");
+			  x.setAttribute('src', 'assets/img/sec/'+myJson[i]['teamCd'].trim()+'.png');
+			  x.setAttribute("width", "40%");
+			  x.setAttribute("alt",myJson[i]['teamCd'].trim());
+			var tabCell = tr.insertCell(-1);
+			tabCell.appendChild(x);
+
+			for (var j = 0; j < col.length; j++) {
+				if (j<4 || j==5 || j==9 || j>11) {
+					var tabCell = tr.insertCell(-1);
+					tabCell.innerHTML = myJson[i][col[j]];
+				}
+			}
+		}
+
+		// FINALLY ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
+		var divContainer = document.getElementById("secTable");
+		divContainer.innerHTML = "";
+		divContainer.appendChild(table);
+	}
+</script>
+</head>
+<body>
+
+	<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="#">WFM MS Test</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+				aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarCollapse">
+				<ul class="navbar-nav me-auto mb-2 mb-md-0">
+					<li class="nav-item"><a class="nav-link active" aria-current="page" href="index.html#services">Home</a></li>
+				</ul>
+				<form class="d-flex">
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+					<button class="btn btn-outline-success" type="submit">Search</button>
+				</form>
+			</div>
+		</div>
+	</nav>
+
+	<main class="container">
+		<div class="bg-light p-5 rounded">
+			<h1>ETL Services Test</h1>
+			<p class="lead">
+				This example is displays the results of calling <a href="api/v1/pit/fbsFootball">api/v1/pit/fbsFootball</a> API with
+				a given point in time.
+			</p>
+			<p>
+				<img src="assets/img/sec/sec.png" width="30">&nbsp;Our scenario...
+			</p>
+
+			<!--  data-bs-ride="carousel" -->
+			<div id="myCarousel" class="carousel slide">
+				<div class="carousel-indicators">
+					<button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" class="active" aria-current="true"
+						aria-label="Slide 1"></button>
+					<button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+					<button type="button" data-bs-target="#myCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+					<button type="button" data-bs-target="#myCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+				</div>
+				<div class="carousel-inner">
+					<div class="carousel-item active">
+						<svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+							preserveAspectRatio="xMidYMid slice" focusable="false">
+							<rect width="100%" height="100%" fill="#333" /></svg>
+
+						<div class="container">
+							<div class="carousel-caption text-start">
+								<img src="assets/img/sec/sec.png" width="30%" class="img-fluid" style="float: left; vertical-align: middle;">
+								The <b>Southeastern Conference (SEC)</b> is an American college athletic conference whose member institutions
+								are located primarily in the South Central and Southeastern United States. Its fourteen members include the
+								flagship public universities of ten states, three additional public land-grant universities, and one private
+								research university. The conference is headquartered in Birmingham, Alabama. The SEC participates in the
+								National Collegiate Athletic Association (NCAA) Division I in sports competitions; for football, it is part of
+								the Football Bowl Subdivision (FBS), formerly known as Division I-A.
+								<p>Members of the SEC have won many national championships: 43 in football, 21 in basketball, 41 in indoor
+									track, 42 in outdoor track, 24 in swimming, 20 in gymnastics, 13 in baseball (College World Series), and one in
+									volleyball. In 1992, the SEC was the first NCAA Division I conference to hold a championship game (and award a
+									subsequent title) for football and was one of the founding member conferences of the Bowl Championship Series
+									(BCS). The current SEC commissioner is Greg Sankey, who has been the commissioner since 2015. The conference
+									sponsors team championships in nine men's sports and twelve women's sports. 
+									</p>
+									<p>The conference is successful
+									financially, with high revenue distribution to its members. During the fiscal year 2014–15 an SEC record $455.8
+									million was generated,[2] which was a sizable increase over the $292.8 million for the 2013–14,[3] largely due
+									to the revenue from the introduction of the SEC Network, a television network operated by the conference
+									dedicated to SEC conference athletic events.</p>
+							</div>
+						</div>
+					</div>
+					<div class="carousel-item">
+						<svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+							preserveAspectRatio="xMidYMid slice" focusable="false">
+							<rect width="100%" height="100%" fill="#333" /></svg>
+
+						<div class="container">
+							<div class="carousel-caption">
+								<img src="assets/img/sec/sec-2012.png" width="100%" class="img-fluid">
+								<h4>SEC circa 2012</h4>
+								<p>As of 2012, the SEC looked like this.</p>
+							</div>
+						</div>
+					</div>
+					<div class="carousel-item">
+						<svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+							preserveAspectRatio="xMidYMid slice" focusable="false">
+							<rect width="100%" height="100%" fill="#333" /></svg>
+						<div class="container">
+							<div class="carousel-caption">
+								<img src="assets/img/sec/sec-2012-changes.png" width="100%" class="img-fluid">
+								<h4>SEC Updates</h4>
+								<p>However, in 2012, <img src="assets/img/sec/GT.png" height="24px"/> Georgia Tech and <img src="assets/img/sec/TULN.png" height="24px"/> Tulane left (delete) and 
+									<img src="assets/img/sec/MIZZ.png" height="24px"/> Missouri and <img src="assets/img/sec/TA&M.png" height="24px"/> Texas A&amp;M were addeed (insert).</p>
+								<p>In 2021 my daughter will be attending <img src="assets/img/sec/SC.png" height="24px"/> South Carolina, so we'll also update the enrollment by 1, 
+								from 35,364 to 35,365 (update). </p>
+							</div>
+						</div>
+					</div>
+					<div class="carousel-item">
+						<svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+							preserveAspectRatio="xMidYMid slice" focusable="false">
+							<rect width="100%" height="100%" fill="#333" /></svg>
+						<div class="container">
+							<div class="carousel-caption text-end">
+								<img src="assets/img/sec/sec-today.png" width="100%" class="img-fluid">
+								<h4>SEC Today</h4>
+								<p>Minus <img src="assets/img/sec/GT.png" height="24px"/> <s>Georgia Tech</s> and <img src="assets/img/sec/TULN.png" height="24px"/> <s>Tulane</s>, plus 
+									<img src="assets/img/sec/MIZZ.png" height="24px"/> Missouri and <img src="assets/img/sec/TA&M.png" height="24px"/> Texas A&amp;M, and
+								    <img src="assets/img/sec/SC.png" height="24px"/> South Carolina enrollment 35,365. </p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+					<span class="carousel-control-prev-icon" aria-hidden="true"></span> <span class="visually-hidden">Previous</span>
+				</button>
+				<button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+					<span class="carousel-control-next-icon" aria-hidden="true"></span> <span class="visually-hidden">Next</span>
+				</button>
+			</div>
+
+
+
+			<p>
+				Enter either a "Point in time" in the format yyyy-MM-d-hh.mm.ss.0, or <b>CURRENT TIMESTAMP</b>, or <b>All</b>
+			<div>
+				<input type="text" id="pit" class="form-control" placeholder="Point in Time" aria-label="Point in Time"
+					aria-describedby="basic-addon1"> <input class="btn btn-primary form-control" type="button"
+					onclick="api2Table()" value="Get data" />
+			</div>
+			<p>&nbsp;</p>
+			<div id="secTable"></div>
+		</div>
+	</main>
+
+	<!-- Vendor JS Files -->
+	<script src="assets/vendor/bootstrap/js/bootstrap.bundle.js"></script>
+
+</body>
+</html>

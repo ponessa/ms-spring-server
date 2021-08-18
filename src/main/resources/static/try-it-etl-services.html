@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Try it - ETL Services</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: FlexStart - v1.4.0
+  * Template URL: https://bootstrapmade.com/flexstart-bootstrap-startup-template/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+  <style>
+  
+.sec-text {
+	margin-left: 48px;
+	margin-right: 48px;
+}
+
+th, td, input {
+	font: 11px Verdana;
+}
+
+.note {
+  background-color: #e7f3fe;
+  border-left: 6px solid #2196F3;
+  font-size: small;
+}
+
+
+</style>
+
+<script>
+	
+	const api2TableNew = async () => {
+		const response = fetch('http://localhost:8080/api/v1/sec-Football/pit?pit=2021-06-29-00.00.00.0', {
+		    method: 'GET',
+		    headers: {
+		      'Content-Type': 'application/json'
+		    }
+		  });
+		  const returnedJson = await response.json(); //extract JSON from the http response
+		  createTableFromJson(returnedJson);
+		}
+	
+	function displayNotes() {
+		var rbSec = document.getElementById("rbSec");
+		if (rbSec.checked) {
+			document.getElementById("secNotes").style.display = "block";
+			document.getElementById("accNotes").style.display = "none";
+		}
+		else {
+			document.getElementById("secNotes").style.display = "none";
+			document.getElementById("accNotes").style.display = "block";
+		}		
+	}
+	
+	function api2Table() {
+		
+		var rbSec = document.getElementById("rbSec");
+		var conf = 'acc';
+		if (rbSec.checked) conf = 'sec';
+		
+		console.log("href="+window.location.href);
+		console.log("host="+window.location.host);
+		console.log("hostname="+window.location.hostname);
+		console.log("protocol="+window.location.protocol);
+		console.log("pathname="+window.location.pathname);
+		console.log("search="+window.location.search);
+		console.log("hash="+window.location.hash);
+		var url = window.location.protocol+"//"+window.location.host;
+		var path = "/api/v1/"+conf+"-football/pit";
+		var pitInput = document.getElementById("pit");
+		var pit = pitInput.value;
+		var parm='';
+		if (pit.trim()=='' || pit.trim().toUpperCase()=='CURRENT TIMESTAMP') parm='?pit=CURRENT TIMESTAMP';
+		else if (pit.trim().toUpperCase()=='ALL') {
+			parm='';
+			path = '/api/v1/'+conf+'-football/scd'
+		}
+		else parm = '?pit='+pit.trim();
+		
+	    var req = new XMLHttpRequest();
+	    req.onreadystatechange = function() {
+	         if (this.readyState == 4 && this.status == 200) {
+	        	 createTableFromJson(conf, this.response);
+	         }
+	    };
+	    console.log(url+parm);
+	    req.open("GET", url+path+parm, true);
+	    req.setRequestHeader("Content-type", "application/json");
+	    req.responseType = 'json';
+	    req.send(null);
+	}
+
+	function createTableFromJson(conf, myJson) {
+
+		// EXTRACT VALUE FOR HTML HEADER. 
+		var col = [];
+
+		for (var i = 0; i < myJson.length; i++) {
+			for ( var key in myJson[i]) {
+				if (col.indexOf(key) === -1) {
+					col.push(key);
+				}
+			}
+		}
+
+		var colTemp = ['','id','Conf', 'Div', 'Team','Name','Enrollment','Eff TMS','Expir TMS', 'RS'];
+
+		// CREATE DYNAMIC TABLE.
+		var table = document.createElement("table");
+		table.setAttribute("class","table table-hover table-sm table-striped");
+
+		// CREATE HTML TABLE HEADER ROW USING THE EXTRACTED HEADERS ABOVE.
+
+		var tr = table.insertRow(-1); // TABLE ROW.
+
+		for (var i = 0; i < colTemp.length; i++) {
+			var th = document.createElement("th"); // TABLE HEADER.
+			th.innerHTML = colTemp[i];
+			tr.appendChild(th);
+		}
+
+		// ADD JSON DATA TO THE TABLE AS ROWS.
+		for (var i = 0; i < myJson.length; i++) {
+
+			tr = table.insertRow(-1);
+
+			var x = document.createElement("img");
+			  x.setAttribute('src', 'assets/img/'+conf+'/'+myJson[i]['teamCd'].trim()+'.png');
+			  x.setAttribute("width", "40%");
+			  x.setAttribute("alt",myJson[i]['teamCd'].trim());
+			var tabCell = tr.insertCell(-1);
+			tabCell.appendChild(x);
+
+			for (var j = 0; j < col.length; j++) {
+				if (j<4 || j==5 || j==9 || j>11) {
+					var tabCell = tr.insertCell(-1);
+					tabCell.innerHTML = myJson[i][col[j]];
+				}
+			}
+		}
+
+		// FINALLY ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
+		var divContainer = document.getElementById("secTable");
+		divContainer.innerHTML = "";
+		divContainer.appendChild(table);
+	}
+</script>
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top">
+    <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
+
+      <a href="index.html" class="logo d-flex align-items-center">
+        <img src="assets/img/logo.png" alt="">
+        <span>WFM</span>
+      </a>
+
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto " href="..">Home</a></li>
+          <li><a class="nav-link scrollto" href="..#about">About</a></li>
+          <li><a class="nav-link scrollto" href="..#try-it">Try-it</a></li>
+          <li><a class="nav-link scrollto" href="..#team">Team</a></li>
+          <li><a class="getstarted scrollto" href="swagger-ui.html">Get Started</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+
+    </div>
+  </header><!-- End Header -->
+
+  <main id="main">
+
+    <!-- ======= Breadcrumbs ======= -->
+    <section class="breadcrumbs">
+      <div class="container">
+
+        <ol>
+          <li><a href="../index.html">Home</a></li>
+          <li>ETL Services</li>
+        </ol>
+        <h2>ETL Services</h2>
+
+      </div>
+    </section><!-- End Breadcrumbs -->
+
+    <!-- ======= Portfolio Details Section ======= -->
+    <section id="portfolio-details" class="portfolio-details">
+      <div class="container">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-8">
+            <div class="portfolio-details-slider swiper-container">
+              <div class="swiper-wrapper align-items-center">
+              
+                <div class="swiper-slide">
+					<img src="/assets/img/sec/SEC.svg" height="100px">The <b>Southeastern Conference (SEC)</b> is an American college athletic conference whose member institutions
+					are located primarily in the South Central and Southeastern United States. Its fourteen members include the
+					flagship public universities of ten states, three additional public land-grant universities, and one private
+					research university. The conference is headquartered in Birmingham, Alabama. The SEC participates in the
+					National Collegiate Athletic Association (NCAA) Division I in sports competitions; for football, it is part of
+					the Football Bowl Subdivision (FBS), formerly known as Division I-A.
+					<br/><br/>
+					<p>Here we'll track some changes made to the conference since 2012 using the ETL Services available within 
+					this framework.
+					</p>
+                </div>
+
+                <div class="swiper-slide">
+                  <img src="assets/img/sec/sec-2012.png" alt="">
+                  <p class="sec-text">This is what the SEC looked like in 2012.</p>
+                </div>
+
+                <div class="swiper-slide">
+                  <img src="assets/img/sec/sec-2012-changes.png" alt="">
+				  <p class="sec-text">Thereafter, Georgia Tech and Tulane left (<b>delete</b>) the conference and Missouri and Texas A&amp;M 
+				  joined (<b>insert</b>). Additionally, we'll increase the enrollment of South Carolina by 1 (<b>update</b>).</p>
+                </div>
+
+                <div class="swiper-slide">
+                  <img src="assets/img/sec/sec-today.png" alt="">
+                  <p class="sec-text">This is what the SEC looked like today.</p>
+                </div>
+                
+                <div class="swiper-slide">
+                  <img src="assets/img/acc/ACC.svg" alt="">
+				  <p>Next we'll look at the Atlantic Coast Conference (ACC).</p>
+                </div>
+                
+                <div class="swiper-slide">
+                  <img src="assets/img/acc/acc-history.png" alt="">
+				  <p>The ACC started with only 9 teams and no divisions. Thereafter Maryland &amp; South Carolina left, while Florida State &amp; Georgia Tech were added. Since 2004,
+				  7 teams were added and the conference was split between an Atlantic &amp; Coastal divisions.</p>
+                </div>
+
+
+              </div>
+              <div class="swiper-pagination"></div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="portfolio-info">
+              <h3>Scenario information</h3>
+              <ul>
+                <li><strong>Category</strong>: ETL</li>
+                <li><strong>API</strong>: <a href="/swagger-ui.html#/fbs-football-controller/retrieveAllCurrentFbsFootballUsingGET_1" target="_blank">sec-football</a> &amp;
+                <a href="/swagger-ui.html#/acc-football-controller/retrieveAllCurrentFbsFootballUsingGET" target="_blank">acc-football</a> 
+                </li>
+              </ul>
+            </div>
+            <div class="portfolio-description">
+              <h2>Extract, transform, and load service</h2>
+              <p>
+                This API uses a ladder processing algorithm to compare consecutive extracts of a given source and identifies inserts, updates, and deletes.
+                Thereafter data managment services are called to establish a connection to the target database and apply the inserts, updates, and deletes.
+                The client is returned a summary of what was applied to the target database and a download link for the delta file.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="row gy-12">
+        	<hr/>
+        	<div class="btn-group" id="filterConference" data-toggle="buttons">
+			<div class="form-check form-check-inline">
+				<input class="form-check-input" type="radio" name="flexRadioDefault" id="rbSec" onchange="displayNotes()" checked> 
+				
+				<img src="/assets/img/sec/SEC.svg" height="32px">
+			</div>
+			<div class="form-check form-check-inline">
+				<input class="form-check-input" type="radio" name="flexRadioDefault" id="rbAcc" onchange="displayNotes()"> 
+				<!--  label class="form-check-label" for="rbAcc"> ACC </label -->
+				<img src="/assets/img/acc/ACC.svg" height="16px">
+			</div>
+			</div>
+			<p>
+				Enter either a "Point in time" in the format yyyy-MM-d-hh.mm.ss.0, or <b>CURRENT TIMESTAMP</b>, or <b>All</b>
+			</p>
+			<div class="note" id="secNotes" style="display:block">
+				<p style="margin: 5px"><b>SEC Notes</b>: The initial data load (IDL) executed between <b>2021-07-11-23.48.35.531</b> and <b>2021-07-11-23.48.35.533</b>. The ETL 
+				executed between <b>2021-07-12-00.25.53.448</b> and completed at <b>2021-07-12-00.25.54.224</b>. To see the original state enter a 
+				timestamp between <b>2021-07-11-23.48.35.533</b> and <b>2021-07-12-00.25.53.448</b>. To see the current state enter a timestamp 
+				<b>&gt;2021-07-12-00.25.54.224</b> or <b>CURRENT TIMESTAMP</b>. To see all records (current, deleted, historical) enter <b>All</b>.</p>
+			</div>
+			<div class="note" id="accNotes" style="display:none">
+				<p style="margin: 5px"><b>ACC Notes</b>: The initial data load (IDL) executed between <b>2021-07-12-18.55.23.573</b> and <b>2021-07-12-18.55.23.577</b>. 
+				The 1<sup>st</sup>ETL completed at <b>2021-07-12-19.02.13.850</b>. The 2<sup>nd</sup>ETL completed at <b>2021-07-12-19.07.57.675</b>.</p>
+			</div>
+			<p/>
+			<div>
+				<input type="text" id="pit" class="form-control" placeholder="Point in Time" aria-label="Point in Time"
+					aria-describedby="basic-addon1"> <input class="btn btn-primary form-control" type="button"
+					onclick="api2Table()" value="Get data" />
+			</div>
+			<p>&nbsp;</p>
+			<div id="secTable"></div>
+        </div>
+      
+      </div>
+    </section><!-- End Portfolio Details Section -->
+
+  </main><!-- End #main -->
+
+	<!-- ======= Footer ======= -->
+	<footer id="footer" class="footer">
+
+
+		<div class="footer-top">
+			<div class="container">
+				<div class="row gy-4">
+					<div class="col-lg-5 col-md-12 footer-info">
+						<a href="index.html" class="logo d-flex align-items-center"> <img
+							src="assets/img/logo.png" alt=""> <span>WFM</span>
+						</a>
+						<p>Empower profitable growth through cognitive workforce management capabilities to anticipate client needs, delivering the right skills at the right time yielding business outcomes that matter to our clients, our employees, and our company.</p>
+						<div class="social-links mt-3">
+							<a href="#"	class="linkedin"><i class="bi bi-linkedin bx bxl-linkedin"></i></a>
+							<a href="#" class="twitter"><i class="bi bi-twitter"></i></a> 
+							<a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+						</div>
+					</div>
+
+					<div class="col-lg-2 col-6 footer-links">
+						<h4>Useful Links</h4>
+						<ul>
+							<li><i class="bi bi-chevron-right"></i> <a href="https://w3.ibm.com/w3publisher/ibm-services-workforce-management">WFM Home</a></li>
+							<li><i class="bi bi-chevron-right"></i> <a href="index.html#about">About
+									us</a></li>
+							<li><i class="bi bi-chevron-right"></i> <a href="index.html#services">Services</a></li>
+							<li><i class="bi bi-chevron-right"></i> <a href="https://w3.ibm.com">Terms
+									of service</a></li>
+							<li><i class="bi bi-chevron-right"></i> <a href="https://w3.ibm.com">Privacy
+									policy</a></li>
+						</ul>
+					</div>
+
+					<div class="col-lg-2 col-6 footer-links">
+						<h4>Our Services</h4>
+						<ul>
+							<li><i class="bi bi-chevron-right"></i> <a href="#">tbd</a></li>
+
+						</ul>
+					</div>
+
+					<div
+						class="col-lg-3 col-md-12 footer-contact text-center text-md-start">
+						<h4>Contact Us</h4>
+						<p>
+							<b>Steven J Ponessa</b> <br> 
+							Mount Pleasant, SC, United States <br> 
+							<strong>Phone:</strong> +1 845-699-5617 <br>
+							<strong>Email:</strong> <a href="mailto:ponessa@us.ibm.com">ponessa@us.ibm.com</a>
+						</p>
+						<p>
+							<b>Mani Shahidsales</b> <br> 
+							Blue Bell, PA, United States <br> 
+							<strong>Phone:</strong> +1 845-699-5617 <br>
+							<strong>Email:</strong> <a href="mailto:mshahids@us.ibm.com">mshahids@us.ibm.com</a>
+						</p>
+
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="copyright">
+				&copy; Copyright <strong><span>IBM</span></strong>. All Rights
+				Reserved
+			</div>
+			<div class="credits">
+				<!-- All the links in the footer should remain intact. -->
+				<!-- You can delete the links only if you purchased the pro version. -->
+				<!-- Licensing information: https://bootstrapmade.com/license/ -->
+				<!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/flexstart-bootstrap-startup-template/ -->
+				Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+			</div>
+		</div>
+	</footer>
+	<!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="assets/vendor/purecounter/purecounter.js"></script>
+  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
+
+</body>
+
+</html>

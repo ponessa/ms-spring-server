@@ -4,9 +4,11 @@ package com.ibm.wfm.beans;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ibm.wfm.annotations.DbInfo;
 import com.ibm.wfm.annotations.DbTable;
 import com.ibm.wfm.utils.Helpers;
 
+@DbInfo(beanName="ServiceLineDim",baseTableName="REFT.SERVICE_LINE",parentBeanName="GrowthPlatformDim",parentBaseTableName="REFT.GROWTH_PLATFORM")
 public class ServiceLineDim  extends NaryTreeNode {
 	@DbTable(columnName="SERVICE_LINE_ID",isId=true)
 	private int        serviceLineId;
@@ -16,7 +18,7 @@ public class ServiceLineDim  extends NaryTreeNode {
 	private String     serviceLineNm;
 	@DbTable(columnName="SERVICE_LINE_DESC")
 	private String     serviceLineDesc;
-	@DbTable(columnName="GROWTH_PLATFORM_CD")
+	@DbTable(columnName="GROWTH_PLATFORM_CD",foreignKey=1)
 	private String     growthPlatformCd;
 	@DbTable(columnName ="EFF_TMS",isScd=true) 
 	@JsonFormat(pattern="yyyy-MM-dd-HH.mm.ss.SSS",timezone="GMT-04:00")
@@ -28,7 +30,9 @@ public class ServiceLineDim  extends NaryTreeNode {
 	private String rowStatusCd;
 
 	// Define null constructor
-	public ServiceLineDim () {}
+	public ServiceLineDim () {
+		this.level = 2;
+	}
 	
 	// Define base constructor
 	public ServiceLineDim (
@@ -60,6 +64,14 @@ public class ServiceLineDim  extends NaryTreeNode {
 		this.serviceLineNm                  = serviceLineNm;
 		this.serviceLineDesc                = serviceLineDesc;
 		this.growthPlatformCd               = growthPlatformCd;
+	}
+	
+	@Override
+	public String getCode() {
+		return this.serviceLineCd;
+	}
+	public String getDescription() {
+		return this.serviceLineNm;
 	}
 	
 	@Override

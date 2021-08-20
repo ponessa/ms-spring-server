@@ -1,6 +1,7 @@
 package com.ibm.wfm.controllers;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,11 +46,29 @@ public class EdsDaoController {
 	@Autowired
 	private FileStorageProperties fileStorageProperties;
 	
+	@GetMapping(path="/eds/growth-platform/tax",produces = { "application/json", "application/xml"})
+	public <T> List<T> retrieveAllGrowthPlatformsTax(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
+			, @RequestParam(required=false, defaultValue="false") @ApiParam(value = "Include parent nodes?") boolean includeParentage) throws SQLException, ClassNotFoundException {
+		edsDaoService.setT(GrowthPlatformDim.class);
+		edsDaoService.setTableNm("REFT.GROWTH_PLATFORM_DIM_V");
+		edsDaoService.setScdTableNm("REFT.GROWTH_PLATFORM_SCD_V");
+		return edsDaoService.findAllTax(filters, null, 1);
+	}
+	
+	@GetMapping(path="/eds/service-line/tax",produces = { "application/json", "application/xml"})
+	public <T> List<T> retrieveAllServiceLinesTax(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
+			, @RequestParam(required=false, defaultValue="false") @ApiParam(value = "Include parent nodes?") boolean includeParentage) throws SQLException, ClassNotFoundException {
+		edsDaoService.setT(ServiceLineDim.class);
+		edsDaoService.setTableNm("REFT.SERVICE_LINE_DIM_V");
+		edsDaoService.setScdTableNm("REFT.SERVICE_LINE_SCD_V");
+		return edsDaoService.findAllTax(filters, null, 1);
+	}
+	
 	/*
 	 * EDS BRAND_DIM
 	 */
 	@GetMapping(path="/eds/brand/scd",produces = { "application/json", "application/xml"})
-	public List<BrandDim> retrieveAllBrands(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<BrandDim> retrieveAllBrands(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException {
 		edsDaoService.setT(BrandDim.class);
 		edsDaoService.setTableNm("REFT.BRAND_DIM_V");
 		edsDaoService.setScdTableNm("REFT.BRAND_SCD_V");
@@ -58,7 +77,8 @@ public class EdsDaoController {
 	
 	@GetMapping(path="/eds/brand/pit",produces = { "application/json", "application/xml"})
 	public List<BrandDim> retrieveAllPitBrands(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
-			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit) {
+			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit)
+			                                            		throws SQLException {
 		edsDaoService.setT(BrandDim.class);
 		edsDaoService.setTableNm("REFT.BRAND_DIM_V");
 		edsDaoService.setScdTableNm("REFT.BRAND_SCD_V");
@@ -66,7 +86,8 @@ public class EdsDaoController {
 	}
 	
 	@GetMapping(path="/eds/brand",produces = { "application/json", "application/xml"})
-	public List<BrandDim> retrieveAllCurrentBrands(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<BrandDim> retrieveAllCurrentBrands(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) 
+												throws SQLException {
 		edsDaoService.setT(BrandDim.class);
 		edsDaoService.setTableNm("REFT.BRAND_DIM_V");
 		edsDaoService.setScdTableNm("REFT.BRAND_SCD_V");
@@ -122,7 +143,7 @@ public class EdsDaoController {
 	 * EDS GROWTH_PLATFORM_DIM
 	 */
 	@GetMapping(path="/eds/growth-platform/scd",produces = { "application/json", "application/xml"})
-	public List<GrowthPlatformDim> retrieveAllGrowthPlatforms(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<GrowthPlatformDim> retrieveAllGrowthPlatforms(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException {
 		edsDaoService.setT(GrowthPlatformDim.class);
 		edsDaoService.setTableNm("REFT.GROWTH_PLATFORM_DIM_V");
 		edsDaoService.setScdTableNm("REFT.GROWTH_PLATFORM_SCD_V");
@@ -131,7 +152,8 @@ public class EdsDaoController {
 	
 	@GetMapping(path="/eds/growth-platform/pit",produces = { "application/json", "application/xml"})
 	public List<BrandDim> retrieveAllPitGrowthPlatforms(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
-			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit) {
+			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit)
+			                                            		throws SQLException {
 		edsDaoService.setT(GrowthPlatformDim.class);
 		edsDaoService.setTableNm("REFT.GROWTH_PLATFORM_DIM_V");
 		edsDaoService.setScdTableNm("REFT.GROWTH_PLATFORM_SCD_V");
@@ -139,7 +161,8 @@ public class EdsDaoController {
 	}
 	
 	@GetMapping(path="/eds/growth-platform",produces = { "application/json", "application/xml"})
-	public List<BrandDim> retrieveAllCurrentGrowthPlatforms(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<BrandDim> retrieveAllCurrentGrowthPlatforms(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) 
+			throws SQLException {
 		edsDaoService.setT(GrowthPlatformDim.class);
 		edsDaoService.setTableNm("REFT.GROWTH_PLATFORM_DIM_V");
 		edsDaoService.setScdTableNm("REFT.GROWTH_PLATFORM_SCD_V");
@@ -195,7 +218,7 @@ public class EdsDaoController {
 	 * EDS SERVICE_LINE_DIM
 	 */
 	@GetMapping(path="/eds/service-line/scd",produces = { "application/json", "application/xml"})
-	public List<ServiceLineDim> retrieveAllServiceLines(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<ServiceLineDim> retrieveAllServiceLines(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException {
 		edsDaoService.setT(ServiceLineDim.class);
 		edsDaoService.setTableNm("REFT.SERVICE_LINE_DIM_V");
 		edsDaoService.setScdTableNm("REFT.SERVICE_LINE_SCD_V");
@@ -204,7 +227,8 @@ public class EdsDaoController {
 	
 	@GetMapping(path="/eds/service-line/pit",produces = { "application/json", "application/xml"})
 	public List<BrandDim> retrieveAllPitServiceLines(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
-			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit) {
+			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit) 
+			                                            		throws SQLException {
 		edsDaoService.setT(ServiceLineDim.class);
 		edsDaoService.setTableNm("REFT.SERVICE_LINE_DIM_V");
 		edsDaoService.setScdTableNm("REFT.SERVICE_LINE_SCD_V");
@@ -212,7 +236,7 @@ public class EdsDaoController {
 	}
 	
 	@GetMapping(path="/eds/service-line",produces = { "application/json", "application/xml"})
-	public List<BrandDim> retrieveAllCurrentServiceLines(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<BrandDim> retrieveAllCurrentServiceLines(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException{
 		edsDaoService.setT(ServiceLineDim.class);
 		edsDaoService.setTableNm("REFT.SERVICE_LINE_DIM_V");
 		edsDaoService.setScdTableNm("REFT.SERVICE_LINE_SCD_V");
@@ -268,7 +292,7 @@ public class EdsDaoController {
 	 * EDS PRACTICE_DIM
 	 */
 	@GetMapping(path="/eds/practice/scd",produces = { "application/json", "application/xml"})
-	public List<PracticeDim> retrieveAllPractices(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<PracticeDim> retrieveAllPractices(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException {
 		edsDaoService.setT(PracticeDim.class);
 		edsDaoService.setTableNm("REFT.PRACTICE_DIM_V");
 		edsDaoService.setScdTableNm("REFT.PRACTICE_SCD_V");
@@ -277,7 +301,8 @@ public class EdsDaoController {
 	
 	@GetMapping(path="/eds/practice/pit",produces = { "application/json", "application/xml"})
 	public List<BrandDim> retrieveAllPitPractices(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
-			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit) {
+			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit)
+			                                            		throws SQLException {
 		edsDaoService.setT(PracticeDim.class);
 		edsDaoService.setTableNm("REFT.PRACTICE_DIM_V");
 		edsDaoService.setScdTableNm("REFT.PRACTICE_SCD_V");
@@ -285,7 +310,7 @@ public class EdsDaoController {
 	}
 	
 	@GetMapping(path="/eds/practice",produces = { "application/json", "application/xml"})
-	public List<BrandDim> retrieveAllCurrentPractices(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<BrandDim> retrieveAllCurrentPractices(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException {
 		edsDaoService.setT(PracticeDim.class);
 		edsDaoService.setTableNm("REFT.PRACTICE_DIM_V");
 		edsDaoService.setScdTableNm("REFT.PRACTICE_SCD_V");

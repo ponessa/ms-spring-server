@@ -4,9 +4,11 @@ package com.ibm.wfm.beans;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ibm.wfm.annotations.DbInfo;
 import com.ibm.wfm.annotations.DbTable;
 import com.ibm.wfm.utils.Helpers;
 
+@DbInfo(beanName="GrowthDim",baseTableName="REFT.GROWTH_PLATFORM",parentBeanName="BrandDim",parentBaseTableName="REFT.BRAND")
 public class GrowthPlatformDim extends NaryTreeNode {
 	@DbTable(columnName="GROWTH_PLATFORM_ID",isId=true)
 	private int        growthPlatformId;
@@ -16,7 +18,7 @@ public class GrowthPlatformDim extends NaryTreeNode {
 	private String     growthPlatformNm;
 	@DbTable(columnName="GROWTH_PLATFORM_DESC")
 	private String     growthPlatformDesc;
-	@DbTable(columnName="BRAND_CD")
+	@DbTable(columnName="BRAND_CD",foreignKey=1)
 	private String     brandCd;
 	@DbTable(columnName ="EFF_TMS",isScd=true) 
 	@JsonFormat(pattern="yyyy-MM-dd-HH.mm.ss.SSS",timezone="GMT-04:00")
@@ -28,7 +30,9 @@ public class GrowthPlatformDim extends NaryTreeNode {
 	private String rowStatusCd;
 
 	// Define null constructor
-	public GrowthPlatformDim () {}
+	public GrowthPlatformDim () {
+		this.level = 1;
+	}
 	
 	// Define base constructor
 	public GrowthPlatformDim (
@@ -60,6 +64,14 @@ public class GrowthPlatformDim extends NaryTreeNode {
 		this.growthPlatformNm               = growthPlatformNm;
 		this.growthPlatformDesc             = growthPlatformDesc;
 		this.brandCd                        = brandCd;
+	}
+	
+	@Override
+	public String getCode() {
+		return this.growthPlatformCd;
+	}
+	public String getDescription() {
+		return this.growthPlatformNm;
 	}
 	
 	@Override

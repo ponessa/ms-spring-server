@@ -1,6 +1,7 @@
 package com.ibm.wfm.controllers;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,12 +30,12 @@ public class Wf360Controller {
 	private CertificationDaoService certificationDaoService; 
 	
 	@GetMapping("/wf360/future-skills")
-	public List<FutureSkillsDim> retrieveAllFutureSkills() {
+	public List<FutureSkillsDim> retrieveAllFutureSkills() throws SQLException {
 		return futureSkillDaoService.findAll();
 	}
 	
 	@GetMapping(value="/wf360/future-skills/csv",produces="text/csv")
-	public void toCsvAllFutureSkills(HttpServletResponse response) throws IOException {
+	public void toCsvAllFutureSkills(HttpServletResponse response) throws IOException, SQLException {
 		response.setContentType("text/csv; charset=utf-8");
 		List<FutureSkill> futureSkills = futureSkillDaoService.findAll();
 		DataMarshaller.writeCsv2PrintWriter(FutureSkill.class, response.getWriter(), futureSkills);

@@ -2,6 +2,7 @@ package com.ibm.wfm.controllers;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class FbsFootballController {
 	
 	
 	@GetMapping(path="/sec-football/scd",produces = { "application/json", "application/xml"})
-	public List<FbsFootballDim> retrieveAllFbsFootball(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<FbsFootballDim> retrieveAllFbsFootball(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException {
 		fbsFootballDaoService.setTableNm("TEST.FBS_FOOTBALL_DIM_V");
 		fbsFootballDaoService.setScdTableNm("TEST.FBS_FOOTBALL_SCD_V");
 		return fbsFootballDaoService.findAll(filters,"all");
@@ -52,14 +53,14 @@ public class FbsFootballController {
 	
 	@GetMapping(path="/sec-football/pit",produces = { "application/json", "application/xml"})
 	public List<FbsFootballDim> retrieveAllPitFbsFootball(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
-			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit) {
+			                                            , @RequestParam(name="pit",defaultValue = "CURRENT TIMESTAMP") @ApiParam(value = "Point in time, format: yyyy-MM-dd-hh.mm.ss.sssssss", example = "2021-06-28-00.00.00.0") String pit) throws SQLException {
 		fbsFootballDaoService.setTableNm("TEST.FBS_FOOTBALL_DIM_V");
 		fbsFootballDaoService.setScdTableNm("TEST.FBS_FOOTBALL_SCD_V");
 		return fbsFootballDaoService.findAll(filters, pit);
 	}
 	
 	@GetMapping(path="/sec-football",produces = { "application/json", "application/xml"})
-	public List<FbsFootballDim> retrieveAllCurrentFbsFootball(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+	public List<FbsFootballDim> retrieveAllCurrentFbsFootball(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException {
 		fbsFootballDaoService.setTableNm("TEST.FBS_FOOTBALL_DIM_V");
 		fbsFootballDaoService.setScdTableNm("TEST.FBS_FOOTBALL_SCD_V");
 		return fbsFootballDaoService.findAll(filters);

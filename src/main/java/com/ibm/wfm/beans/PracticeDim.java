@@ -4,9 +4,11 @@ package com.ibm.wfm.beans;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ibm.wfm.annotations.DbInfo;
 import com.ibm.wfm.annotations.DbTable;
 import com.ibm.wfm.utils.Helpers;
 
+@DbInfo(beanName="PracticeDim",baseTableName="REFT.PRACTICE",parentBeanName="ServiceLineDim",parentBaseTableName="REFT.SERVICE_LINE")
 public class PracticeDim extends NaryTreeNode {
 	@DbTable(columnName="PRACTICE_ID",isId=true)
 	private int        practiceId;
@@ -20,7 +22,7 @@ public class PracticeDim extends NaryTreeNode {
 	private String     dccCd;
 	@DbTable(columnName="ACCEL_PRACTICE_IND")
 	private String     accelPracticeInd;
-	@DbTable(columnName="SERVICE_LINE_CD")
+	@DbTable(columnName="SERVICE_LINE_CD",foreignKey=1)
 	private String     serviceLineCd;
 	@DbTable(columnName ="EFF_TMS",isScd=true) 
 	@JsonFormat(pattern="yyyy-MM-dd-HH.mm.ss.SSS",timezone="GMT-04:00")
@@ -32,7 +34,9 @@ public class PracticeDim extends NaryTreeNode {
 	private String rowStatusCd;
 
 	// Define null constructor
-	public PracticeDim () {}
+	public PracticeDim () {
+		this.level = 3;
+	}
 	
 	// Define base constructor
 	public PracticeDim (
@@ -70,6 +74,14 @@ public class PracticeDim extends NaryTreeNode {
 		this.dccCd                          = dccCd;
 		this.accelPracticeInd               = accelPracticeInd;
 		this.serviceLineCd                  = serviceLineCd;
+	}
+	
+	@Override
+	public String getCode() {
+		return this.practiceCd;
+	}
+	public String getDescription() {
+		return this.practiceNm;
 	}
 	
 	@Override

@@ -4,9 +4,11 @@ package com.ibm.wfm.beans;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ibm.wfm.annotations.DbInfo;
 import com.ibm.wfm.annotations.DbTable;
 import com.ibm.wfm.utils.Helpers;
 
+@DbInfo(beanName="BrandDim",baseTableName="REFT.BRAND")
 public class BrandDim extends NaryTreeNode {
 	@DbTable(columnName="BRAND_ID",isId=true)
 	private int        brandId;
@@ -57,6 +59,13 @@ public class BrandDim extends NaryTreeNode {
 		this.brandNm                        = brandNm;
 		this.brandDesc                      = brandDesc;
 	}
+	@Override
+	public String getCode() {
+		return this.brandCd;
+	}
+	public String getDescription() {
+		return this.brandNm;
+	}
 	
 	@Override
 	public boolean equals(Object obj) {
@@ -86,13 +95,6 @@ public class BrandDim extends NaryTreeNode {
         + "," + Helpers.formatCsvField("BRAND_NM")
         + "," + Helpers.formatCsvField("BRAND_DESC")
 		;
-	}
-	
-	public String getCode() {
-		return brandCd;
-	}
-	public String getDescription() {
-		return brandNm;
 	}
     
 	// Define Getters and Setters

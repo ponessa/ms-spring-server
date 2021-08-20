@@ -2,7 +2,9 @@ package com.ibm.wfm.services;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -12,7 +14,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.ibm.wfm.annotations.DbTable;
 import com.ibm.wfm.beans.EtlResponse;
-import com.ibm.wfm.beans.GbsShortListDim;
+import com.ibm.wfm.beans.NaryTreeNode;
 import com.ibm.wfm.exceptions.EtlException;
 import com.ibm.wfm.utils.DataManagerType4;
 import com.ibm.wfm.utils.DataMarshaller;
@@ -21,32 +23,41 @@ import com.opencsv.exceptions.CsvValidationException;
 
 public abstract class AbstractDaoService implements DaoInterface {
 	private Class t = null;
+	private Class parentT = null;
 	private String baseTableNm = null;
 	private String tableNm = null;
 	private String scdTableNm = null;
 	
+
 	
 	public <T> List<T> getListForSql(Class type, Connection conn, String sql) throws SQLException {
 		return DataManagerType4.getSelectQuery(type, conn, sql);
 	}
 	
-	public <T> List<T> findAll() {
+	public <T> List<T> findAll() throws SQLException {
 		return findAll("", null, 0);
 	}
 	
-	public <T> List<T> findAll(String filters) {
+	public <T> List<T> findAll(String filters) throws SQLException {
 		return findAll(filters, null, 0);
 	}
 	
-	public <T> List<T> findAll(String filters, String pit) {
+	public <T> List<T> findAll(String filters, String pit) throws SQLException {
 		return findAll(filters, pit, 0);
 	}
 	
-	public <T> List<T> findAll(String filters, int size) {
+	public <T> List<T> findAll(String filters, int size)throws SQLException {
 		return findAll(filters, null, size);
 	}
 	
-	public <T> List<T> findAll(String filters, String pit, int size) {
+	public <T> List<T> findAllTax(String filters, String pit, int size) throws SQLException, ClassNotFoundException {
+		Connection conn = getConnection();
+		System.out.println("Connection established");
+		String sql = "SELECT * FROM xxx WHERE 1=1";
+		return  DataManagerType4.getSelectTaxonomyQuery(t, conn, sql);
+	}
+	
+	public <T> List<T> findAll(String filters, String pit, int size) throws SQLException {
 		List<T> fbsFootballDims = new ArrayList<>();
 
 		try {
@@ -82,6 +93,7 @@ public abstract class AbstractDaoService implements DaoInterface {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw e;
 		}
 		return fbsFootballDims;
 	}
@@ -239,6 +251,14 @@ public abstract class AbstractDaoService implements DaoInterface {
 
 	public void setBaseTableNm(String baseTableNm) {
 		this.baseTableNm = baseTableNm;
+	}
+
+	public Class getParentT() {
+		return parentT;
+	}
+
+	public void setParentT(Class parentT) {
+		this.parentT = parentT;
 	}
 	
 

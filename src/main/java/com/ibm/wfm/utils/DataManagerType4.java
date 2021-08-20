@@ -19,7 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ibm.wfm.annotations.DbInfo;
 import com.ibm.wfm.annotations.DbTable;
+import com.ibm.wfm.beans.BrandDim;
 
 public class DataManagerType4 {
 
@@ -541,6 +543,104 @@ public class DataManagerType4 {
 		}
 		
 		return insertCnt;
+	}
+	
+	public static <T> List<T> getSelectTaxonomyQuery(Class<T> type, Connection conn, String query) throws SQLException, ClassNotFoundException {
+		
+	    List<T> list = new ArrayList<T>(); //Return an empty array, instead of null, if the query has no rows;
+	    
+	    String tableSuffix = "_DIM_V";
+	    
+	    List<String> selectColumns = new ArrayList<>();
+	    List<String> tables = new ArrayList<>();
+	    List<String> keys = new ArrayList<>();
+	    List<String> foreignKeys = new ArrayList<>();
+	    List<String> orderBy = new ArrayList<>();
+	    int tableCnt = 0;
+	    try {
+	    	Class<T> root = type;
+	    	System.out.println(type.getCanonicalName());
+	    	for (Field field : type.getDeclaredFields()) {
+				DbTable column = field.getAnnotation(DbTable.class);
+				if (column!=null) {
+					if (!column.isScd() && column.foreignKey()==-1)
+						selectColumns.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+					if (column.foreignKey()>0) foreignKeys.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+					if (column.keySeq()>0) orderBy.add(0,"T"+String.valueOf(tableCnt)+"."+column.columnName());
+				}
+		   }
+
+		   DbInfo dbInfo = type.getAnnotation(DbInfo.class);
+		   tables.add(dbInfo.baseTableName()+tableSuffix+" T"+String.valueOf(tableCnt));
+	       Class zParentType = null;
+	       try {
+	    	   zParentType = Class.forName("com.ibm.wfm.beans."+dbInfo.parentBeanName());
+	    	   root = zParentType;
+	       }
+	       catch (ClassNotFoundException cnfe) {}
+	       
+	       
+	       while (zParentType!=null) {
+		       System.out.println(zParentType.getCanonicalName());
+		       tableCnt++;
+		       List<String> columns = new ArrayList<>();
+		       dbInfo = (DbInfo) zParentType.getAnnotation(DbInfo.class);
+			   tables.add(dbInfo.baseTableName()+tableSuffix+" T"+String.valueOf(tableCnt));
+		       for (Field field : zParentType.getDeclaredFields()) {
+					DbTable column = field.getAnnotation(DbTable.class);
+					if (column!=null) {
+						if (!column.isScd() && column.foreignKey()==-1)
+							columns.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+						if (column.keySeq()>0) {
+							keys.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+							orderBy.add(0,"T"+String.valueOf(tableCnt)+"."+column.columnName());
+						}
+						if (column.foreignKey()>0) foreignKeys.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+					}
+		       }
+		       selectColumns.addAll(0, columns);
+		       dbInfo = (DbInfo) zParentType.getAnnotation(DbInfo.class);
+		       zParentType = null;
+		       if (dbInfo!=null) {
+			       try {
+			    	   zParentType = Class.forName("com.ibm.wfm.beans."+dbInfo.parentBeanName());
+			    	   root = zParentType;
+			       }
+			       catch (ClassNotFoundException cnfe) {}
+		       }
+	       }
+	       
+	       System.out.println("SELECT ");
+	       int i=0;
+	       for (String column: selectColumns) {
+	    	   System.out.println((i++ == 0?"":",")+column);
+	       }
+	       i=0;
+	       System.out.println("FROM ");
+	       for (String table: tables) {
+	    	   if (i==0) System.out.println(table);
+	    	   else {
+	    		   System.out.println("INNER JOIN "+table);
+	    		   if (i<=keys.size())
+	    			   System.out.println("ON "+keys.get(i-1)+" = "+foreignKeys.get(i-1));
+	    	   }
+	    	   i++;
+	       }
+	       i=0;
+	       System.out.println("ORDER BY ");
+	       for (String column: orderBy) {
+	    	   System.out.println((i++ == 0?"":",")+column);
+	       }
+
+	       Constructor<T> constructor = root.getConstructor();
+	       T t = constructor.newInstance();
+	       list.add(t);
+
+	    } 
+	    catch (InvocationTargetException | InstantiationException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException e) {
+	    	throw new RuntimeException("Unable to construct "+type.getName()+ " object: " + e.getMessage(), e);
+		} 
+	    return list;
 	}
 	
 	public static <T> List<T> getSelectQuery(Class<T> type, Connection conn, String query) throws SQLException {

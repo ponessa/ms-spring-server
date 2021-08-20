@@ -3,6 +3,7 @@ package com.ibm.wfm.controllers;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class SkillDaoController {
 	@GetMapping(path="/skill/future-skills",produces = { "application/json", "application/xml"})
 	public List<FutureSkillsDim> retrieveAllCurrentFutureSkills(
 			  @RequestParam(required=false, defaultValue = "ALL") @ApiParam(value="Size of the results, use ‘ALL’ (default) to get all data.") String size
-			, @RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) {
+			, @RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters) throws SQLException {
 		skillDaoService.setT(FutureSkillsDim.class);
 		skillDaoService.setTableNm("SKILL.FUTURE_SKILLS_DIM_V");
 		skillDaoService.setScdTableNm("SKILL.FUTURE_SKILLS_SCD_V");
@@ -64,7 +65,7 @@ public class SkillDaoController {
 	public ResponseEntity<Resource> retrieveAllCurrentFutureSkills(
 			  @RequestParam(required=false, defaultValue = "ALL") @ApiParam(value="Size of the results, use ‘ALL’ (default) to get all data.") String size
 			, @RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
-			, HttpServletRequest request) throws CsvValidationException, IOException, SecurityException {
+			, HttpServletRequest request) throws CsvValidationException, IOException, SecurityException, SQLException {
 		
 		int fetchFirstXRows = 0;
 		if (Helpers.isInteger(size)) fetchFirstXRows = Integer.parseInt(size);

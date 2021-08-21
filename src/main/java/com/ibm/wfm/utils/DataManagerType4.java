@@ -21,7 +21,7 @@ import java.util.Map;
 
 import com.ibm.wfm.annotations.DbInfo;
 import com.ibm.wfm.annotations.DbTable;
-import com.ibm.wfm.beans.BrandDim;
+import com.ibm.wfm.beans.NaryTreeNode;
 
 public class DataManagerType4 {
 
@@ -545,6 +545,91 @@ public class DataManagerType4 {
 		return insertCnt;
 	}
 	
+	public static <T> String generateSqlForTaxonomy(Class<T> type, String tableSuffix) throws ClassNotFoundException {
+		StringBuffer sql = new StringBuffer();
+	    List<String> selectColumns = new ArrayList<>();
+	    List<String> tables = new ArrayList<>();
+	    List<String> keys = new ArrayList<>();
+	    List<String> foreignKeys = new ArrayList<>();
+	    List<String> orderBy = new ArrayList<>();
+	    int tableCnt = 0;
+
+    	Class<T> root = type;
+    	System.out.println(type.getCanonicalName());
+    	for (Field field : type.getDeclaredFields()) {
+			DbTable column = field.getAnnotation(DbTable.class);
+			if (column!=null) {
+				if (!column.isScd() && column.foreignKey()==-1)
+					selectColumns.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+				if (column.foreignKey()>0) foreignKeys.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+				if (column.keySeq()>0) orderBy.add(0,"T"+String.valueOf(tableCnt)+"."+column.columnName());
+			}
+	   }
+
+	   DbInfo dbInfo = type.getAnnotation(DbInfo.class);
+	   tables.add(dbInfo.baseTableName()+tableSuffix+" T"+String.valueOf(tableCnt));
+       Class zParentType = null;
+       try {
+    	   zParentType = Class.forName("com.ibm.wfm.beans."+dbInfo.parentBeanName());
+    	   root = zParentType;
+       }
+       catch (ClassNotFoundException cnfe) {}
+       
+       
+       while (zParentType!=null) {
+	       System.out.println(zParentType.getCanonicalName());
+	       tableCnt++;
+	       List<String> columns = new ArrayList<>();
+	       dbInfo = (DbInfo) zParentType.getAnnotation(DbInfo.class);
+		   tables.add(dbInfo.baseTableName()+tableSuffix+" T"+String.valueOf(tableCnt));
+	       for (Field field : zParentType.getDeclaredFields()) {
+				DbTable column = field.getAnnotation(DbTable.class);
+				if (column!=null) {
+					if (!column.isScd() && column.foreignKey()==-1)
+						columns.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+					if (column.keySeq()>0) {
+						keys.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+						orderBy.add(0,"T"+String.valueOf(tableCnt)+"."+column.columnName());
+					}
+					if (column.foreignKey()>0) foreignKeys.add("T"+String.valueOf(tableCnt)+"."+column.columnName());
+				}
+	       }
+	       selectColumns.addAll(0, columns);
+	       dbInfo = (DbInfo) zParentType.getAnnotation(DbInfo.class);
+	       zParentType = null;
+	       if (dbInfo!=null) {
+		       try {
+		    	   zParentType = Class.forName("com.ibm.wfm.beans."+dbInfo.parentBeanName());
+		    	   root = zParentType;
+		       }
+		       catch (ClassNotFoundException cnfe) {}
+	       }
+       }
+       
+       sql.append("SELECT ");
+       int i=0;
+       for (String column: selectColumns) {
+    	   sql.append((i++ == 0?"":",")+column);
+       }
+       i=0;
+       sql.append(" FROM ");
+       for (String table: tables) {
+    	   if (i==0) System.out.println(table);
+    	   else {
+    		   sql.append("INNER JOIN "+table);
+    		   if (i<=keys.size())
+    			   sql.append("ON "+keys.get(i-1)+" = "+foreignKeys.get(i-1));
+    	   }
+    	   i++;
+       }
+       i=0;
+       System.out.println("ORDER BY ");
+       for (String column: orderBy) {
+    	   System.out.println((i++ == 0?"":",")+column);
+       }
+		return sql.toString();
+	}
+	
 	public static <T> List<T> getSelectTaxonomyQuery(Class<T> type, Connection conn, String query) throws SQLException, ClassNotFoundException {
 		
 	    List<T> list = new ArrayList<T>(); //Return an empty array, instead of null, if the query has no rows;
@@ -556,6 +641,8 @@ public class DataManagerType4 {
 	    List<String> keys = new ArrayList<>();
 	    List<String> foreignKeys = new ArrayList<>();
 	    List<String> orderBy = new ArrayList<>();
+	    List<Class>  zclassHierarchy = new ArrayList<>();
+	    zclassHierarchy.add(type);
 	    int tableCnt = 0;
 	    try {
 	    	Class<T> root = type;
@@ -576,6 +663,7 @@ public class DataManagerType4 {
 	       try {
 	    	   zParentType = Class.forName("com.ibm.wfm.beans."+dbInfo.parentBeanName());
 	    	   root = zParentType;
+	    	   zclassHierarchy.add(0,zParentType);
 	       }
 	       catch (ClassNotFoundException cnfe) {}
 	       
@@ -605,37 +693,78 @@ public class DataManagerType4 {
 			       try {
 			    	   zParentType = Class.forName("com.ibm.wfm.beans."+dbInfo.parentBeanName());
 			    	   root = zParentType;
+			    	   zclassHierarchy.add(0,zParentType);
 			       }
 			       catch (ClassNotFoundException cnfe) {}
 		       }
 	       }
 	       
-	       System.out.println("SELECT ");
+	       StringBuffer sql = new StringBuffer();
+	       sql.append("SELECT ");
 	       int i=0;
 	       for (String column: selectColumns) {
-	    	   System.out.println((i++ == 0?"":",")+column);
+	    	   sql.append((i++ == 0?"":",")+column);
 	       }
 	       i=0;
-	       System.out.println("FROM ");
+	       sql.append(" FROM ");
 	       for (String table: tables) {
-	    	   if (i==0) System.out.println(table);
+	    	   if (i==0) sql.append(table);
 	    	   else {
-	    		   System.out.println("INNER JOIN "+table);
+	    		   sql.append(" INNER JOIN "+table);
 	    		   if (i<=keys.size())
-	    			   System.out.println("ON "+keys.get(i-1)+" = "+foreignKeys.get(i-1));
+	    			   sql.append(" ON "+keys.get(i-1)+" = "+foreignKeys.get(i-1));
 	    	   }
 	    	   i++;
 	       }
 	       i=0;
-	       System.out.println("ORDER BY ");
+	       sql.append(" ORDER BY ");
 	       for (String column: orderBy) {
-	    	   System.out.println((i++ == 0?"":",")+column);
+	    	   sql.append((i++ == 0?"":",")+column);
+	       }
+	       
+	       System.out.println(sql.toString());
+	       for (Class c: zclassHierarchy) {
+	    	   System.out.println(c.getName()+" ("+c.getCanonicalName()+", "+c.getTypeName()+", "+c.getSimpleName()+")");
 	       }
 
-	       Constructor<T> constructor = root.getConstructor();
-	       T t = constructor.newInstance();
-	       list.add(t);
+	       Statement stmt = conn.createStatement();
+	       ResultSet rst = stmt.executeQuery(sql.toString());
 
+	       T lastObjectFound = null;
+	       T lastRoot = null;
+	       while (rst.next()) {
+	    	   List<T> objectList = new ArrayList<>();
+	    	   for (Class zclass: zclassHierarchy) {
+	    	       Constructor<T> constructor = zclass.getConstructor();
+		    	   T t = constructor.newInstance();
+		    	   loadResultSet2Object(rst, t);
+		    	   objectList.add(t);
+	    	   }
+	    	   i=0;
+	    	   for (T object: objectList) {
+	    		   if (list.size()==0) {
+	    			   list.add(object);
+	    			   lastObjectFound = object;
+	    			   lastRoot = object;
+	    		   }
+	    		   else {
+	    			   NaryTreeNode tempObject = NaryTree.findStatic((NaryTreeNode)object, (NaryTreeNode)list.get(0), false);
+	    			   if (tempObject==null) {
+	    				   if (i == 0) {
+	    					   list.add(object);
+	    					   lastRoot = object;
+	    				   }
+	    				   else ((NaryTreeNode)lastObjectFound).addChild((NaryTreeNode)object);
+	    				   if (i<objectList.size()-1) lastObjectFound = object;
+	    			   }
+	    			   else {
+	    				   if (i<objectList.size()-1) lastObjectFound = (T)tempObject;
+	    			   }
+	    		   }
+	    		   i++;
+	    	   }
+	    	   lastObjectFound = lastRoot;
+	       }
 	    } 
 	    catch (InvocationTargetException | InstantiationException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException e) {
 	    	throw new RuntimeException("Unable to construct "+type.getName()+ " object: " + e.getMessage(), e);

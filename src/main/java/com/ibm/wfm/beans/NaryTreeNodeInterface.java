@@ -10,4 +10,6 @@ public interface NaryTreeNodeInterface<T> {
 	public static int POST_ORDER_ITERATE = 16;
 	public static int IN_ORDER_ITERATE = 32;
 	public List<T> getChildren();
+	public String getCode();
+	public String getFullKey();
 }

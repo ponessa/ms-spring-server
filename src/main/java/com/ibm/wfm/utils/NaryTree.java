@@ -678,6 +678,49 @@ public class NaryTree {
 		return null;
 	}
 	
+	public static NaryTreeNode findStatic(NaryTreeNode keyNode, NaryTreeNode root, boolean useFullKey) {
+		LinkedList<NaryTreeNode> stack = new LinkedList<>();
+		LinkedList<NaryTreeNode> list = new LinkedList<>();
+		if (root == null) {
+			return null;
+		}
+		//if (node.getCode().equals(key)) return node;
+		if (useFullKey) {
+			if (root.getFullKey().equals(keyNode.getFullKey())) return root;
+		}
+		else {
+			if (root.getCode().equals(keyNode.getCode())) return root;
+		}
+	
+		stack.add(root);
+		while (!stack.isEmpty()) {
+			NaryTreeNode node = stack.pollLast();
+			//if (node.getCode().equals(key)) return node;
+			if (useFullKey) {
+				if (node.getFullKey().equals(keyNode.getFullKey())) return node;
+			}
+			else {
+				if (node.getCode().equals(keyNode.getCode())) return node;
+			}
+			list.add(node);
+			if (node.getChildren() != null) {
+				Collections.reverse(node.getChildren());
+	
+				for (NaryTreeNode item : node.getChildren()) {
+					//if (item.getCode().equals(key)) {
+					if ((useFullKey && item.getFullKey().equals(keyNode.getFullKey()))
+					 ||	(!useFullKey && item.getCode().equals(keyNode.getCode()))) {
+						Collections.reverse(node.getChildren());
+						return item;
+					}
+					stack.add(item);
+				} //end-for (NaryTreeNode item : node.getChildren())
+				Collections.reverse(node.getChildren());
+			}
+		}
+		return null;
+	}
+	
 	/*
 	public boolean isLevelValid(int level, int status) {
 		int levelValue = (int)Math.pow(2,level);

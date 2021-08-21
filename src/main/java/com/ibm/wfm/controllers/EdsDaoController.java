@@ -64,6 +64,15 @@ public class EdsDaoController {
 		return edsDaoService.findAllTax(filters, null, 1);
 	}
 	
+	@GetMapping(path="/eds/practice/tax",produces = { "application/json", "application/xml"})
+	public <T> List<T> retrieveAllPracticesTax(@RequestParam(defaultValue = "") @ApiParam(value = "Add filter in format of a SQL WHERE clause.") String filters
+			, @RequestParam(required=false, defaultValue="false") @ApiParam(value = "Include parent nodes?") boolean includeParentage) throws SQLException, ClassNotFoundException {
+		edsDaoService.setT(PracticeDim.class);
+		edsDaoService.setTableNm("REFT.PRACTICE_DIM_V");
+		edsDaoService.setScdTableNm("REFT.PRACTICE_SCD_V");
+		return edsDaoService.findAllTax(filters, null, 1);
+	}
+	
 	/*
 	 * EDS BRAND_DIM
 	 */

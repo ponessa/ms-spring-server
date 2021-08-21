@@ -18,12 +18,12 @@ public class PracticeDim extends NaryTreeNode {
 	private String     practiceNm;
 	@DbTable(columnName="PRACTICE_DESC")
 	private String     practiceDesc;
+	@DbTable(columnName="SERVICE_LINE_CD",foreignKey=1)
+	private String     serviceLineCd;
 	@DbTable(columnName="DCC_CD")
 	private String     dccCd;
 	@DbTable(columnName="ACCEL_PRACTICE_IND")
 	private String     accelPracticeInd;
-	@DbTable(columnName="SERVICE_LINE_CD",foreignKey=1)
-	private String     serviceLineCd;
 	@DbTable(columnName ="EFF_TMS",isScd=true) 
 	@JsonFormat(pattern="yyyy-MM-dd-HH.mm.ss.SSS",timezone="GMT-04:00")
 	private Timestamp effTms;
